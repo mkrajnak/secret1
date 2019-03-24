@@ -25,4 +25,10 @@ for i in range(N//2):
   keystr = step(keystr)
 
 # Encrypt/decrypt stdin2stdout
-plaintext = sys.stdiZ|
+plaintext = sys.stdin.buffer.read(N_B)
+while plaintext:
+  sys.stdout.buffer.write((
+    int.from_bytes(plaintext,'little') ^ keystr
+  ).to_bytes(N_B,'little'))
+  keystr = step(keystr)
+  plaintext = sys.stdin.buffer.read(N_B)
