@@ -7,11 +7,12 @@ N = 8 * N_B
 
 
 # Next keystream, taken from decrypted file
-def step(x):
+def s_step(x):
   x = (x & 1) << N+1 | x << 1 | x >> N-1
   y = 0
   for i in range(N):
     y |= SUB[(x >> i) & 7] << i
+  import ipdb; ipdb.set_trace()
   return y
 
 
@@ -55,6 +56,10 @@ def decrypt_from_keystream():
         for x in decrypt(hint, kstrm):
             f.write(bytes(x))
 
+def r_step(x):
+    x = x >> 1 &  ~(1 << N)
+
 
 if __name__ == '__main__':
-    decrypt_from_keystream()
+    # decrypt_from_keystream()
+    s_step(5)
