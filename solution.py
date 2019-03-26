@@ -4,6 +4,8 @@ from sys import argv
 SUB = [0, 1, 1, 0, 1, 0, 1, 0]
 N_B = 32
 N = 8 * N_B
+zeros = [x for x in range(len(SUB)) if SUB[x] == 0]
+ones = [x for x in range(len(SUB)) if SUB[x] == 1]
 
 
 # Next keystream, taken from decrypted file
@@ -35,8 +37,35 @@ def decrypt(secret, key):
     decrypted = []
     for x in get_part(secret):
         decrypted.append(xor(x, key))
-        key = step(int.from_bytes(bytes(key), 'little')).to_bytes(N_B, 'little')
+        key = s_step(int.from_bytes(bytes(key), 'little')).to_bytes(N_B, 'little')
     return decrypted
+
+
+# getting a value from a bit on nth position
+def get_bit(value, n):
+    return (value >> n) & 1
+
+
+def next_bit(g, bit):
+    one = 0 if g & 0b011 else 1
+    zero = 1 if g & 0b011 else 0
+    return one if bit else zero
+
+
+def r_step(x):
+    for i in range(N//2):
+        # possibilities for the first bit
+        guess = ones if get_bit(x, 255) else zeros
+        # find all 4 possibilitiest
+        for j in range(2, N+1):
+            bit = get_bit(x, N - j)
+            guess = [(g << 1) + next_bit(g, bit) for g in guess]
+        # one possibily has to match original step
+        for g in guess:
+            tmp = g >> 1 & ~(1 << N)
+            if x == s_step(tmp):
+                x = tmp  # match
+    return x
 
 
 # initial decryption of files from extracted keystream aka attack
@@ -45,23 +74,20 @@ def decrypt_from_keystream():
     secret = open('bis.txt.enc', 'rb').read(N_B)
 
     # use known plaintext attack to get first 32B of keystream
-    kstrm = xor(plain, secret)
+    k = xor(plain, secret)
+    kstrm = int.from_bytes(k, 'little')
+    print(r_step(kstrm).to_bytes(N_B, 'little').decode())
 
     # use obtained keystream and step to decrypt the rest of the algorithm
     super_cipher = open('super_cipher.py.enc', 'rb').read()
-    print(''.join([bytes(x).decode() for x in decrypt(super_cipher, kstrm)]))
+    # print(''.join([bytes(x).decode() for x in decrypt(super_cipher, k)]))
 
     # same fo the hint.gif
     hint = open('hint.gif.enc', 'rb').read()
     with open('hint.gif', 'wb') as f:
-        for x in decrypt(hint, kstrm):
+        for x in decrypt(hint, k):
             f.write(bytes(x))
 
 
-def r_step(x):
-    x = x >> 1 & ~(1 << N)
-
-
 if __name__ == '__main__':
-    # decrypt_from_keystream()
-    s_step(5)
+    decrypt_from_keystream()
