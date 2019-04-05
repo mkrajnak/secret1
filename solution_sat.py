@@ -32,21 +32,20 @@ def get_eq(bit, c, b, a):
 def solve(eq):
     solution = Minisat().solve(eq)
     assert solution.success, 'ERR: Failed to solve'
-    import ipdb; ipdb.set_trace()
-    result = 0
-    for i in range(0, N):
-        if (solution[Variable(str(i))]):
-            result |= (1 << (i - 1)) if i else (1 << (N - 1))
+
+    result = 1 << N-1 if solution[Variable('0')] else 0
+    for i in range(1, N):
+        result |= 1 << i-1 if (solution[Variable(str(i))]) else 0
+
     return result
 
 
-def r_sat_steps(x):
-    for i in range(N // 2):
-        eq = Variable('eq')
-        for i in range(0, N):
-            eq = eq & get_eq(get_bit(x, i), i % N, (i + 1) % N, (i +2) % N)
-        x = solve(eq)
-    return x
+def r_sat_step(x):
+    eq = Variable('eq')
+    for i in range(0, N):
+        eq = eq & get_eq(get_bit(x, i), i % N, (i + 1) % N, (i +2) % N)
+    return solve(eq)
+
 
 
 if __name__ == '__main__':
@@ -57,4 +56,7 @@ if __name__ == '__main__':
     k = xor(plain, secret)
     kstrm = int.from_bytes(k, 'little')
 
-    print(r_sat_steps(kstrm).to_bytes(N_B, 'little').decode())
+    for i in range(N // 2):
+        kstrm = r_sat_step(kstrm)
+
+    print(kstrm.to_bytes(N_B, 'little').decode())
