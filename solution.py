@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from sys import argv
 
 SUB = [0, 1, 1, 0, 1, 0, 1, 0]
@@ -52,11 +52,11 @@ def next_bit(g, bit):
     return one if bit else zero
 
 
-def r_step(x):
+def r_steps(x):
     for i in range(N//2):
         # possibilities for the first bit
         guess = ones if get_bit(x, 255) else zeros
-        # find all 4 possibilitiest
+        # find all 4 possibilities
         for j in range(2, N+1):
             bit = get_bit(x, N - j)
             guess = [(g << 1) + next_bit(g, bit) for g in guess]
@@ -76,7 +76,7 @@ def decrypt_from_keystream():
     # use known plaintext attack to get first 32B of keystream
     k = xor(plain, secret)
     kstrm = int.from_bytes(k, 'little')
-    print(r_step(kstrm).to_bytes(N_B, 'little').decode())
+    print(r_steps(kstrm).to_bytes(N_B, 'little').decode())
 
     # use obtained keystream and step to decrypt the rest of the algorithm
     super_cipher = open('super_cipher.py.enc', 'rb').read()
