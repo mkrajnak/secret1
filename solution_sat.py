@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 from os import path
 from satispy import Variable
 from satispy.solver import Minisat
