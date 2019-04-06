@@ -20,15 +20,15 @@ def xor(ar1, ar2):
 def get_bit(value, n):
     return (value >> n) & 1
 
-# Creates satispy variables from bits and turns them to an equation
-def get_eq(bit, c, b, a):
+# Creates satispy variables from bits and turns them to an formula
+def get_formula(bit, c, b, a):
     a, b, c = Variable(str(a)), Variable(str(b)), Variable(str(c))
     if bit:
         return (-a & -b & c) | (b & -c) | (a & -c)
     else:
         return (-a & -b & -c) | (b & c) | (a & c)
 
-# Solve the equations via Minisat and convert the solution to Int
+# Solve the formulas via Minisat and convert the solution to Int
 def solve(eq):
     solution = Minisat().solve(eq)
     assert solution.success and not solution.error, 'ERR: Failed to solve'
@@ -43,7 +43,8 @@ def solve(eq):
 def r_sat_step(x):
     eq = Variable('eq')
     for i in range(0, N):
-        eq = eq & get_eq(get_bit(x, i), i % N, (i + 1) % N, (i +2) % N)
+        eq &= get_formula(get_bit(x, i), i % N, (i + 1) % N, (i +2) % N)
+
     return solve(eq)
 
 
