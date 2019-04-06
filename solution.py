@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-from sys import argv
+from os import path
+from sys import argv, exit
 
 SUB = [0, 1, 1, 0, 1, 0, 1, 0]
 N_B = 32
@@ -65,7 +66,7 @@ def r_step(x):
         if x == s_step(tmp):
             return tmp  # match
 
-
+# Function used for decription of encrypted files
 # def decrypt_from_keystream():
     # # use obtained keystream and step to decrypt the rest of the algorithm
     # super_cipher = open('super_cipher.py.enc', 'rb').read()
@@ -79,8 +80,9 @@ def r_step(x):
 
 
 if __name__ == '__main__':
-    plain = open('bis.txt', 'rb').read(N_B)
-    secret = open('bis.txt.enc', 'rb').read(N_B)
+    PATH = path.abspath(argv[1])
+    plain = open(PATH + '/bis.txt', 'rb').read(N_B)
+    secret = open(PATH + '/bis.txt.enc', 'rb').read(N_B)
 
     # use known plaintext attack to get first 32B of keystream
     k = xor(plain, secret)

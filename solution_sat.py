@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-from sys import argv
+from os import path
 from satispy import Variable
 from satispy.solver import Minisat
-import string
+from sys import argv, exit
 
 N_B = 32
 N = 8 * N_B
@@ -20,7 +20,7 @@ def xor(ar1, ar2):
 def get_bit(value, n):
     return (value >> n) & 1
 
-
+# Creates satispy variables from bits and turns them to an equation
 def get_eq(bit, c, b, a):
     a, b, c = Variable(str(a)), Variable(str(b)), Variable(str(c))
     if bit:
@@ -28,10 +28,10 @@ def get_eq(bit, c, b, a):
     else:
         return (-a & -b & -c) | (b & c) | (a & c)
 
-
+# Solve the equations via Minisat and convert the solution to Int
 def solve(eq):
     solution = Minisat().solve(eq)
-    assert solution.success, 'ERR: Failed to solve'
+    assert solution.success and not solution.error, 'ERR: Failed to solve'
 
     result = 1 << N-1 if solution[Variable('0')] else 0
     for i in range(1, N):
@@ -39,7 +39,7 @@ def solve(eq):
 
     return result
 
-
+# Reverse step operations
 def r_sat_step(x):
     eq = Variable('eq')
     for i in range(0, N):
@@ -47,10 +47,10 @@ def r_sat_step(x):
     return solve(eq)
 
 
-
 if __name__ == '__main__':
-    plain = open('bis.txt', 'rb').read(N_B)
-    secret = open('bis.txt.enc', 'rb').read(N_B)
+    PATH = path.abspath(argv[1])
+    plain = open(PATH + '/bis.txt', 'rb').read(N_B)
+    secret = open(PATH + '/bis.txt.enc', 'rb').read(N_B)
 
     # use known plaintext attack to get first 32B of keystream
     k = xor(plain, secret)
